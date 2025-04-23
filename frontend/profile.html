@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - FilmRating</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/loadHeader.js"></script>
+    <style>
+        .profile-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile-info {
+            flex: 1;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            color: #666;
+        }
+
+        .profile-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        .movie-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .movie-item {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .movie-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .movie-rating {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <img src="images/default-avatar.jpg" alt="Photo de profil" class="profile-avatar">
+            <div class="profile-info">
+                <h1 class="profile-name">Nom de l'utilisateur</h1>
+                <p>Membre depuis 2024</p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">42</div>
+                        <div class="stat-label">Films notés</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">15</div>
+                        <div class="stat-label">Commentaires</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Amis</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-sections">
+            <div class="section">
+                <h2 class="section-title">Films récemment notés</h2>
+                <div class="movie-list">
+                    <div class="movie-item">
+                        <img src="images/movie1.jpg" alt="Film 1">
+                        <div class="movie-title">Le Voyage de Chihiro</div>
+                        <div class="movie-rating">4.9/5</div>
+                    </div>
+                    <div class="movie-item">
+                        <img src="images/movie2.jpg" alt="Film 2">
+                        <div class="movie-title">Inception</div>
+                        <div class="movie-rating">4.8/5</div>
+                    </div>
+                    <div class="movie-item">
+                        <img src="images/movie3.jpg" alt="Film 3">
+                        <div class="movie-title">Le Parrain</div>
+                        <div class="movie-rating">4.9/5</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Activité récente</h2>
+                <div class="activity-list">
+                    <p>Vous avez noté "Le Voyage de Chihiro" - Il y a 2 jours</p>
+                    <p>Vous avez commenté "Inception" - Il y a 3 jours</p>
+                    <p>Vous avez ajouté "Le Parrain" à vos favoris - Il y a 5 jours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vérifier si l'utilisateur est connecté
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+            }
+        });
+    </script>
+</body>
+</html> 

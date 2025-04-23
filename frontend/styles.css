@@ -1,0 +1,251 @@
+/* Styles généraux */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    background-color: #f5f5f5;
+    color: #333;
+}
+
+section {
+    padding: 2rem;
+    margin: 0;
+}
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+}
+
+/* Section Écologique */
+.eco-section {
+    background-color: #e8f5e9;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.eco-content {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.eco-feature {
+    flex: 1;
+    min-width: 300px;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.eco-feature h3 {
+    color: #2e7d32;
+    margin-top: 0;
+}
+
+/* Section Carousel */
+.top-movies {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.movie-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding: 1rem;
+    scroll-behavior: smooth;
+}
+
+.movie-card {
+    flex: 0 0 auto;
+    width: 200px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover {
+    transform: translateY(-5px);
+}
+
+.movie-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+.movie-card h3 {
+    margin: 0.5rem;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.movie-card p {
+    margin: 0.5rem;
+    text-align: center;
+    color: #666;
+}
+
+/* Section Commentaires */
+.comments-section {
+    background-color: #e3f2fd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.comment {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-info img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info h4 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.comment p {
+    margin: 0;
+    font-style: italic;
+    color: #555;
+}
+
+/* Section Amis */
+.friends-section {
+    background-color: #fff3e0;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.friends-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.friend-connection {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.user-avatar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.user-avatar:hover {
+    transform: translateY(-5px);
+}
+
+.user-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ff9800;
+    padding: 2px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.user-avatar:hover img {
+    border-color: #ff5722;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.user-avatar p {
+    margin: 0;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.connection-line {
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9800, #ff5722);
+    position: relative;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.connection-line::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: linear-gradient(90deg, 
+        rgba(255,152,0,0.2) 0%,
+        rgba(255,87,34,0.2) 50%,
+        rgba(255,152,0,0.2) 100%);
+    border-radius: 6px;
+    z-index: -1;
+}
+
+/* Suppression du triangle */
+.connection-line::before {
+    display: none;
+}
+
+.friend-message {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin-top: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .eco-content {
+        flex-direction: column;
+    }
+    
+    .movie-card {
+        width: 150px;
+    }
+    
+    .movie-card img {
+        height: 225px;
+    }
+} 
