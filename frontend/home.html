@@ -279,7 +279,8 @@
                     `;
                     
                     // Ajouter l'événement de clic pour ouvrir le modal
-                    movieCard.addEventListener('click', () => {
+                    movieCard.addEventListener('click', async () => {
+                        currentFilm = film; // Stocker le film actuel
                         const modal = document.getElementById('filmModal');
                         const modalPoster = document.getElementById('modalPoster');
                         const modalTitle = document.getElementById('modalTitle');
@@ -290,8 +291,100 @@
                         modalTitle.textContent = film.title;
                         modalYear.textContent = film.year;
                         
+                        // Vérifier si l'utilisateur a déjà noté ce film
+                        const token = sessionStorage.getItem('token');
+                        if (token) {
+                            try {
+                                const response = await fetch(`http://localhost:3000/api/ratings/check/${film.id}`, {
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`
+                                    }
+                                });
+                                
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    const ratingSection = document.querySelector('.rating-section');
+                                    const commentSection = document.querySelector('.comment-section');
+                                    const submitButton = document.querySelector('.submit-button');
+                                    
+                                    if (data.hasRated) {
+                                        // L'utilisateur a déjà noté le film
+                                        ratingSection.innerHTML = `
+                                            <label class="rating-label">Votre note</label>
+                                            <div class="star-rating">
+                                                ${Array(5).fill().map((_, i) => 
+                                                    `<span class="star ${i < data.rating.rating ? 'active' : ''}" style="color: ${i < data.rating.rating ? '#ffd700' : '#ddd'}">★</span>`
+                                                ).join('')}
+                                            </div>
+                                            <p>Vous avez déjà noté ce film</p>
+                                        `;
+                                        commentSection.style.display = 'none';
+                                        submitButton.style.display = 'none';
+                                    } else {
+                                        // L'utilisateur n'a pas encore noté le film
+                                        ratingSection.innerHTML = `
+                                            <label class="rating-label">Note</label>
+                                            <div class="star-rating">
+                                                <span class="star" data-rating="1">★</span>
+                                                <span class="star" data-rating="2">★</span>
+                                                <span class="star" data-rating="3">★</span>
+                                                <span class="star" data-rating="4">★</span>
+                                                <span class="star" data-rating="5">★</span>
+                                            </div>
+                                        `;
+                                        commentSection.style.display = 'block';
+                                        submitButton.style.display = 'block';
+                                        
+                                        // Réinitialiser le formulaire
+                                        currentRating = 0;
+                                        document.getElementById('comment').value = '';
+                                        
+                                        // Réattacher les événements aux étoiles
+                                        const newStars = document.querySelectorAll('.star');
+                                        newStars.forEach(star => {
+                                            star.addEventListener('click', () => {
+                                                const rating = parseInt(star.dataset.rating);
+                                                currentRating = rating;
+                                                
+                                                newStars.forEach(s => {
+                                                    if (parseInt(s.dataset.rating) <= rating) {
+                                                        s.classList.add('active');
+                                                    } else {
+                                                        s.classList.remove('active');
+                                                    }
+                                                });
+                                            });
+
+                                            star.addEventListener('mouseover', () => {
+                                                const rating = parseInt(star.dataset.rating);
+                                                newStars.forEach(s => {
+                                                    if (parseInt(s.dataset.rating) <= rating) {
+                                                        s.style.color = '#ffd700';
+                                                    } else {
+                                                        s.style.color = '#ddd';
+                                                    }
+                                                });
+                                            });
+
+                                            star.addEventListener('mouseout', () => {
+                                                newStars.forEach(s => {
+                                                    if (parseInt(s.dataset.rating) <= currentRating) {
+                                                        s.style.color = '#ffd700';
+                                                    } else {
+                                                        s.style.color = '#ddd';
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Erreur lors de la vérification de la note:', error);
+                            }
+                        }
+                        
                         modal.style.display = 'block';
-                        document.body.style.overflow = 'hidden'; // Empêcher le défilement de la page
+                        document.body.style.overflow = 'hidden';
                     });
                     
                     moviesContainer.appendChild(movieCard);
@@ -301,7 +394,9 @@
                 const modal = document.getElementById('filmModal');
                 const closeButton = document.querySelector('.close-button');
                 const stars = document.querySelectorAll('.star');
+                const submitButton = document.querySelector('.submit-button');
                 let currentRating = 0;
+                let currentFilm = null;
 
                 stars.forEach(star => {
                     star.addEventListener('click', () => {
@@ -348,6 +443,52 @@
                     if (event.target === modal) {
                         modal.style.display = 'none';
                         document.body.style.overflow = 'auto'; // Réactiver le défilement de la page
+                    }
+                });
+
+                // Gérer l'envoi du formulaire
+                submitButton.addEventListener('click', async () => {
+                    if (!currentFilm) return;
+                    
+                    const token = sessionStorage.getItem('token');
+                    if (!token) {
+                        alert('Vous devez être connecté pour noter un film');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    const comment = document.getElementById('comment').value;
+                    
+                    if (currentRating === 0) {
+                        alert('Veuillez attribuer une note au film');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('http://localhost:3000/api/ratings', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                film_id: currentFilm.id,
+                                rating: currentRating,
+                                review: comment
+                            })
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`Erreur lors de l'enregistrement de la note: ${errorData.message || response.statusText}`);
+                        }
+
+                        // Fermer la popup sans afficher d'alerte
+                        modal.style.display = 'none';
+                        document.body.style.overflow = 'auto';
+                    } catch (error) {
+                        console.error('Erreur détaillée:', error);
+                        alert(`Une erreur est survenue: ${error.message}`);
                     }
                 });
             } catch (error) {

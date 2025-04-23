@@ -12,5 +12,4 @@ Pages
 - Profile.html
 - Admin.html
 - Home.html
-- PopUpFilm.html
 - addFriends.html

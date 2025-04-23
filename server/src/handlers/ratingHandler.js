@@ -66,6 +66,18 @@ const ratingHandler = {
       if (err) return res.status(500).json({ message: 'Server error' });
       res.json(ratings);
     });
+  },
+
+  checkUserRating: (req, res) => {
+    const { film_id } = req.params;
+    db.get(
+      `SELECT id, rating, review FROM ratings WHERE user_id = ? AND film_id = ?`,
+      [req.user.id, film_id],
+      (err, rating) => {
+        if (err) return res.status(500).json({ message: 'Server error' });
+        res.json({ hasRated: !!rating, rating: rating || null });
+      }
+    );
   }
 };
 

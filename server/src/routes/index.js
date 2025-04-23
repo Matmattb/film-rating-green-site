@@ -23,6 +23,7 @@ router.post('/ratings', authenticateToken, ratingHandler.create);
 router.get('/ratings/me', authenticateToken, ratingHandler.getMyRatings);
 router.delete('/ratings/:id', authenticateToken, ratingHandler.delete);
 router.get('/ratings/friend/:friendId', authenticateToken, ratingHandler.getFriendRatings);
+router.get('/ratings/check/:film_id', authenticateToken, ratingHandler.checkUserRating);
 
 // Friend routes
 router.post('/friends', authenticateToken, friendHandler.add);
