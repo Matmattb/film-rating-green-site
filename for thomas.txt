@@ -9,7 +9,8 @@ Pk c'est ecolo
 
 Pages
 - Index.html
-- Profile.html
+- Private Pages
 - Admin.html
 - Home.html
-- addFriends.html
+- addFriends
+- searchbar

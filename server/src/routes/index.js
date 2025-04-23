@@ -9,7 +9,7 @@ const friendHandler = require('../handlers/friendHandler');
 // User routes
 router.post('/users', userHandler.register);
 router.post('/users/login', userHandler.login);
-router.get('/users/me', authenticateToken, userHandler.getProfile);
+router.get('/users/profile', authenticateToken, userHandler.getProfile);
 
 // Film routes
 router.get('/films', filmHandler.getAll);
