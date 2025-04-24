@@ -26,5 +26,9 @@ router.get('/ratings/friend/:friendId', authenticateToken, ratingHandler.getFrie
 router.get('/ratings/check/:film_id', authenticateToken, ratingHandler.checkUserRating);
 
 // Friend routes
+router.get('/friends', authenticateToken, friendHandler.getAll);
+router.get('/friends/requests', authenticateToken, friendHandler.getRequests);
+router.post('/friends/accept/:userId', authenticateToken, friendHandler.acceptRequest);
+router.post('/friends/decline/:userId', authenticateToken, friendHandler.declineRequest);
 
 module.exports = router; 

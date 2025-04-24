@@ -26,41 +26,64 @@ const friendHandler = {
         });
     },
 
-    // Rechercher des utilisateurs
-    search: (req, res) => {
+    // Obtenir les invitations d'amis
+    getRequests: (req, res) => {
         const userId = req.user.id;
 
         db.all(`
-            SELECT 
-                u.name,
-                u.registration_date,
-                u.icon,
-                CASE 
-                    WHEN EXISTS (
-                        SELECT 1 FROM friends 
-                        WHERE ((user_id = ? AND friend_id = u.id) 
-                        OR (user_id = u.id AND friend_id = ?))
-                        AND state = 2
-                    ) THEN 3
-                    WHEN EXISTS (
-                        SELECT 1 FROM friends 
-                        WHERE user_id = ? AND friend_id = u.id AND state = 1
-                    ) THEN 1
-                    WHEN EXISTS (
-                        SELECT 1 FROM friends 
-                        WHERE user_id = u.id AND friend_id = ? AND state = 1
-                    ) THEN 2
-                    ELSE 0
-                END as state
-            FROM users u
-            WHERE u.role != 'admin' AND u.id != ?
+            SELECT u.id, u.name, u.icon, u.registration_date,
+                   (SELECT COUNT(*) FROM ratings WHERE user_id = u.id) as rated_movies
+            FROM friends f
+            JOIN users u ON f.user_id = u.id
+            WHERE f.friend_id = ? AND f.state = 1
             ORDER BY u.name ASC
-        `, [userId, userId, userId, userId, userId], (err, users) => {
+        `, [userId], (err, requests) => {
             if (err) {
-                console.error('Erreur lors de la recherche d\'utilisateurs:', err);
-                return res.status(500).json({ message: 'Erreur lors de la recherche d\'utilisateurs' });
+                console.error('Erreur lors de la récupération des invitations:', err);
+                return res.status(500).json({ message: 'Erreur lors de la récupération des invitations' });
             }
-            res.json(users);
+            res.json(requests);
+        });
+    },
+
+    // Accepter une demande d'ami
+    acceptRequest: (req, res) => {
+        const userId = req.user.id;
+        const requesterId = req.params.userId;
+
+        db.run(`
+            UPDATE friends 
+            SET state = 2 
+            WHERE user_id = ? AND friend_id = ? AND state = 1
+        `, [requesterId, userId], function(err) {
+            if (err) {
+                console.error('Erreur lors de l\'acceptation de la demande:', err);
+                return res.status(500).json({ message: 'Erreur lors de l\'acceptation de la demande' });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ message: 'Demande non trouvée ou déjà traitée' });
+            }
+            res.json({ message: 'Demande acceptée avec succès' });
+        });
+    },
+
+    // Refuser une demande d'ami
+    declineRequest: (req, res) => {
+        const userId = req.user.id;
+        const requesterId = req.params.userId;
+
+        db.run(`
+            DELETE FROM friends 
+            WHERE user_id = ? AND friend_id = ? AND state = 1
+        `, [requesterId, userId], function(err) {
+            if (err) {
+                console.error('Erreur lors du refus de la demande:', err);
+                return res.status(500).json({ message: 'Erreur lors du refus de la demande' });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ message: 'Demande non trouvée ou déjà traitée' });
+            }
+            res.json({ message: 'Demande refusée avec succès' });
         });
     }
 };

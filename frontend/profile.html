@@ -546,7 +546,7 @@
                         <div class="stat-label">Films notés</div>
                     </div>
                     <div class="stat-item">
-                        <div class="stat-value">8</div>
+                        <div class="stat-value" id="friendsCount"></div>
                         <div class="stat-label">Amis</div>
                     </div>
                 </div>
@@ -606,111 +606,13 @@
     </div>
 
     <script>
-        // Vérifier si l'utilisateur est connecté et charger les données
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
+        let friendsCounter = 0;
 
-            try {
-                const response = await fetch('http://localhost:3000/api/users/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        // Token invalide ou expiré
-                        sessionStorage.removeItem('token');
-                        window.location.href = '/login';
-                        return;
-                    }
-                    throw new Error('Erreur lors de la récupération des données');
-                }
-
-                const data = await response.json();
-                
-                // Mettre à jour les informations de l'utilisateur
-                document.querySelector('.profile-name').textContent = data.user.username;
-                document.querySelector('.profile-info p').textContent = `Membre depuis ${new Date(data.user.memberSince).toLocaleDateString('fr-FR')}`;
-                document.querySelector('.profile-avatar').src = `img/profile/${data.user.icon}.png`;
-                
-                // Mettre à jour les statistiques
-                document.querySelector('.stat-item:nth-child(1) .stat-value').textContent = data.stats.ratedMovies;
-                document.querySelector('.stat-item:nth-child(2) .stat-value').textContent = data.stats.friends;
-
-                // Mettre à jour les films récemment notés
-                const movieList = document.querySelector('.movie-list');
-                movieList.innerHTML = ''; // Vider la liste existante
-
-                if (data.recentRatings && data.recentRatings.length > 0) {
-                    data.recentRatings.forEach(movie => {
-                        const movieItem = document.createElement('div');
-                        movieItem.className = 'movie-item';
-                        const posterPath = `img/poster/${movie.title}.jpg`;
-                        
-                        // Créer les étoiles
-                        const stars = Array(5).fill('★').map((star, i) => 
-                            `<span class="star ${i < movie.rating ? '' : 'empty'}">${star}</span>`
-                        ).join('');
-
-                        movieItem.innerHTML = `
-                            <img src="${posterPath}" alt="${movie.title}" onerror="this.onerror=null; this.src='img/logo.png';">
-                            <div class="movie-overlay">
-                                <div class="movie-title">${movie.title}</div>
-                                <div class="movie-rating">
-                                    <div class="stars">${stars}</div>
-                                    <span>${movie.rating}/5</span>
-                                </div>
-                            </div>
-                        `;
-                        movieList.appendChild(movieItem);
-                    });
-                } else {
-                    movieList.innerHTML = `
-                        <div class="no-movies">
-                            <h3>Vous n'avez pas encore noté de films</h3>
-                            <p>Commencez à noter vos films préférés pour les voir apparaître ici !</p>
-                            <a href="/home" class="browse-movies">Parcourir les films</a>
-                        </div>
-                    `;
-                }
-
-            } catch (error) {
-                console.error('Erreur:', error);
-                // Afficher un message d'erreur à l'utilisateur
-                const profileContainer = document.querySelector('.profile-container');
-                profileContainer.innerHTML = `
-                    <div class="error-message">
-                        <h2>Une erreur est survenue</h2>
-                        <p>Impossible de charger les données du profil. Veuillez réessayer plus tard.</p>
-                        <button onclick="window.location.reload()">Réessayer</button>
-                    </div>
-                `;
-            }
-        });
-
-        // Gestion des onglets
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Retirer la classe active de tous les boutons et contenus
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-
-                // Ajouter la classe active au bouton cliqué
-                button.classList.add('active');
-
-                // Afficher le contenu correspondant
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(tabId).classList.add('active');
-            });
-        });
+        // Fonction pour mettre à jour le compteur d'amis
+        function updateFriendsCount(count) {
+            friendsCounter = count;
+            document.querySelector('.stat-item:nth-child(2) .stat-value').textContent = friendsCounter;
+        }
 
         // Charger la liste des amis
         async function loadFriends() {
@@ -726,6 +628,8 @@
                 }
 
                 const friends = await response.json();
+                updateFriendsCount(friends.length);
+
                 const friendsGrid = document.querySelector('.friends-grid');
                 friendsGrid.innerHTML = '';
 
@@ -764,10 +668,230 @@
             }
         }
 
-        // Charger les amis au chargement de la page
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFriends();
+        // Vérifier si l'utilisateur est connecté et charger les données
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            document.querySelector('.stat-item:nth-child(2) .stat-value').textContent = friendsCounter;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        sessionStorage.removeItem('token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                    throw new Error('Erreur lors de la récupération des données');
+                }
+
+                const data = await response.json();
+                
+                // Mettre à jour les informations de l'utilisateur
+                document.querySelector('.profile-name').textContent = data.user.username;
+                document.querySelector('.profile-info p').textContent = `Membre depuis ${new Date(data.user.memberSince).toLocaleDateString('fr-FR')}`;
+                document.querySelector('.profile-avatar').src = `img/profile/${data.user.icon}.png`;
+                
+                // Mettre à jour les statistiques
+                document.querySelector('.stat-item:nth-child(1) .stat-value').textContent = data.stats.ratedMovies;
+
+                // Mettre à jour les films récemment notés
+                const movieList = document.querySelector('.movie-list');
+                movieList.innerHTML = ''; // Vider la liste existante
+
+                if (data.recentRatings && data.recentRatings.length > 0) {
+                    data.recentRatings.forEach(movie => {
+                        const movieItem = document.createElement('div');
+                        movieItem.className = 'movie-item';
+                        const posterPath = `img/poster/${movie.title}.jpg`;
+                        
+                        // Créer les étoiles
+                        const stars = Array(5).fill('★').map((star, i) => 
+                            `<span class="star ${i < movie.rating ? '' : 'empty'}">${star}</span>`
+                        ).join('');
+
+                        movieItem.innerHTML = `
+                            <img src="${posterPath}" alt="${movie.title}" onerror="this.onerror=null; this.src='img/logo.png';">
+                            <div class="movie-overlay">
+                                <div class="movie-title">${movie.title}</div>
+                                <div class="movie-rating">
+                                    <div class="stars">${stars}</div>
+                                    <span>${movie.rating}/5</span>
+                                </div>
+                            </div>
+                        `;
+                        movieList.appendChild(movieItem);
+                    });
+                } else {
+                    movieList.innerHTML = `
+                        <div class="no-movies">
+                            <h3>Vous n'avez pas encore noté de films</h3>
+                            <p>Commencez à noter vos films préférés pour les voir apparaître ici !</p>
+                            <a href="/home" class="browse-movies">Parcourir les films</a>
+                        </div>
+                    `;
+                }
+
+                // Charger la liste des amis
+                loadFriends();
+                loadFriendRequests();
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                const profileContainer = document.querySelector('.profile-container');
+                profileContainer.innerHTML = `
+                    <div class="error-message">
+                        <h2>Une erreur est survenue</h2>
+                        <p>Impossible de charger les données du profil. Veuillez réessayer plus tard.</p>
+                        <button onclick="window.location.reload()">Réessayer</button>
+                    </div>
+                `;
+            }
         });
+
+        // Gestion des onglets
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Retirer la classe active de tous les boutons et contenus
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Ajouter la classe active au bouton cliqué
+                button.classList.add('active');
+
+                // Afficher le contenu correspondant
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Charger les invitations d'amis
+        async function loadFriendRequests() {
+            try {
+                const response = await fetch('http://localhost:3000/api/friends/requests', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erreur lors du chargement des invitations');
+                }
+
+                const requests = await response.json();
+                const requestsList = document.querySelector('.requests-list');
+                requestsList.innerHTML = '';
+
+                if (!requests || requests.length === 0) {
+                    requestsList.innerHTML = `
+                        <div class="no-friends">
+                            <h3>Vous n'avez pas de demandes d'amis</h3>
+                            <p>Les demandes d'amis que vous recevrez apparaîtront ici.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                requests.forEach(request => {
+                    console.log('Request object:', request); // Pour déboguer
+                    const requestCard = document.createElement('div');
+                    requestCard.className = 'request-card';
+                    requestCard.innerHTML = `
+                        <img src="img/profile/${request.icon}.png" alt="${request.name}" class="request-avatar">
+                        <div class="request-info">
+                            <h3>${request.name}</h3>
+                            <p>${request.rated_movies} films notés</p>
+                        </div>
+                        <div class="request-actions">
+                            <button class="accept-button" data-request-id="${request.id}">Accepter</button>
+                            <button class="decline-button" data-request-id="${request.id}">Refuser</button>
+                        </div>
+                    `;
+
+                    // Ajouter les gestionnaires d'événements directement après la création de la carte
+                    const acceptBtn = requestCard.querySelector('.accept-button');
+                    acceptBtn.addEventListener('click', async () => {
+                        try {
+                            const response = await fetch(`http://localhost:3000/api/friends/accept/${request.id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Erreur lors de l\'acceptation de la demande');
+                            }
+
+                            // Supprimer la carte de demande
+                            requestCard.remove();
+                            
+                            // Incrémenter le compteur
+                            updateFriendsCount(friendsCounter + 1);
+                            
+                            // Recharger la liste des amis
+                            loadFriends();
+                            
+                            // Recharger les demandes pour mettre à jour la pastille
+                            loadFriendRequests();
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            alert('Une erreur est survenue lors de l\'acceptation de la demande');
+                        }
+                    });
+
+                    // Ajouter le gestionnaire pour le bouton de refus
+                    const declineBtn = requestCard.querySelector('.decline-button');
+                    declineBtn.addEventListener('click', async () => {
+                        try {
+                            const response = await fetch(`http://localhost:3000/api/friends/decline/${request.id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                                }
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Erreur lors du refus de la demande');
+                            }
+
+                            // Supprimer la carte de demande
+                            requestCard.remove();
+                            
+                            // Recharger les demandes pour mettre à jour la pastille
+                            loadFriendRequests();
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            alert('Une erreur est survenue lors du refus de la demande');
+                        }
+                    });
+
+                    requestsList.appendChild(requestCard);
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+                const requestsList = document.querySelector('.requests-list');
+                requestsList.innerHTML = `
+                    <div class="error-message">
+                        <h2>Une erreur est survenue</h2>
+                        <p>Impossible de charger la liste des demandes d'amis. Veuillez réessayer plus tard.</p>
+                        <button onclick="loadFriendRequests()">Réessayer</button>
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
-</html> 
+</html>
