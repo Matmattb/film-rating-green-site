@@ -1,8 +1,12 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const { Pool } = require('pg');
 
-const db = new sqlite3.Database(path.join(__dirname, '../../database.db'), (err) => {
-    if (err) console.error('Database error:', err);
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-module.exports = db; 
+module.exports = {
+  query: (text, params) => pool.query(text, params)
+};

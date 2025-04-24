@@ -7,85 +7,72 @@ const userHandler = {
     const { name, email, password } = req.body;
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      db.run(
-        `INSERT INTO users (name, email, password, role, registration_date) VALUES (?, ?, ?, ?, ?)`,
-        [name, email, hashedPassword, 'user', new Date().toISOString()],
-        (err) => {
-          if (err) return res.status(400).json({ message: 'Email already exists' });
-          res.sendStatus(201);
-        }
+      await db.query(
+        `INSERT INTO users (name, email, password, role, registration_date) VALUES ($1, $2, $3, $4, $5)`,
+        [name, email, hashedPassword, 'user', new Date().toISOString()]
       );
+      res.sendStatus(201);
     } catch (error) {
+      if (error.code === '23505') { // Code d'erreur PostgreSQL pour violation d'unicité (email déjà utilisé)
+        return res.status(400).json({ message: 'Email already exists' });
+      }
       res.status(500).json({ message: 'Server error' });
     }
   },
 
-  login: (req, res) => {
+  login: async (req, res) => {
     const { email, password } = req.body;
-    db.get(`SELECT * FROM users WHERE email = ?`, [email], async (err, user) => {
-      if (err) {
-        console.error('Database error during login:', err);
-        return res.status(500).json({ message: 'Server error' });
-      }
+    try {
+      const { rows } = await db.query(`SELECT * FROM users WHERE email = $1`, [email]);
+      const user = rows[0];
       if (!user) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
-      try {
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) {
-          return res.status(401).json({ message: 'Invalid email or password' });
-        }
-        const token = jwt.sign({ id: user.id, role: user.role }, 'secret', { expiresIn: '1h' });
-        res.json({ token, role: user.role });
-      } catch (error) {
-        console.error('Error comparing passwords:', error);
-        res.status(500).json({ message: 'Server error' });
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        return res.status(401).json({ message: 'Invalid email or password' });
       }
-    });
+      const token = jwt.sign({ id: user.id, role: user.role }, 'secret', { expiresIn: '1h' });
+      res.json({ token, role: user.role });
+    } catch (error) {
+      console.error('Error during login:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
   },
 
   getProfile: async (req, res) => {
     try {
       const userId = req.user.id;
-      
-      // Récupérer les informations de base de l'utilisateur
-      const user = await new Promise((resolve, reject) => {
-        db.get(`SELECT id, name, email, role, registration_date, icon FROM users WHERE id = ?`, [userId], (err, user) => {
-          if (err) reject(err);
-          resolve(user);
-        });
-      });
 
+      // Récupérer les informations de base de l'utilisateur
+      const { rows: userRows } = await db.query(
+        `SELECT id, name, email, role, registration_date, icon FROM users WHERE id = $1`,
+        [userId]
+      );
+      const user = userRows[0];
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur non trouvé' });
       }
 
       // Récupérer les statistiques
-      const stats = await new Promise((resolve, reject) => {
-        db.get(`
-          SELECT 
-            (SELECT COUNT(*) FROM ratings WHERE user_id = ?) as rated_movies,
-            (SELECT COUNT(*) FROM friends WHERE (user_id = ? OR friend_id = ?) AND state = 1) as friends_count
-        `, [userId, userId, userId], (err, stats) => {
-          if (err) reject(err);
-          resolve(stats);
-        });
-      });
+      const { rows: statsRows } = await db.query(
+        `SELECT 
+          (SELECT COUNT(*) FROM ratings WHERE user_id = $1) as rated_movies,
+          (SELECT COUNT(*) FROM friends WHERE (user_id = $1 OR friend_id = $1) AND state = 1) as friends_count`,
+        [userId]
+      );
+      const stats = statsRows[0];
 
       // Récupérer les films récemment notés
-      const recentRatings = await new Promise((resolve, reject) => {
-        db.all(`
-          SELECT f.id, f.title, r.rating, r.timestamp
-          FROM films f
-          JOIN ratings r ON f.id = r.film_id
-          WHERE r.user_id = ?
-          ORDER BY r.timestamp DESC
-          LIMIT 4
-        `, [userId], (err, ratings) => {
-          if (err) reject(err);
-          resolve(ratings);
-        });
-      });
+      const { rows: recentRatings } = await db.query(
+        `SELECT f.id, f.title, r.rating, r.timestamp
+        FROM films f
+        JOIN ratings r ON f.id = r.film_id
+        WHERE r.user_id = $1
+        ORDER BY r.timestamp DESC
+        LIMIT 4`,
+        [userId]
+      );
 
       res.json({
         user: {
@@ -113,4 +100,4 @@ const userHandler = {
   }
 };
 
-module.exports = userHandler; 
+module.exports = userHandler;
