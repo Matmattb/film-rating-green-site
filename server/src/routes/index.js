@@ -26,7 +26,5 @@ router.get('/ratings/friend/:friendId', authenticateToken, ratingHandler.getFrie
 router.get('/ratings/check/:film_id', authenticateToken, ratingHandler.checkUserRating);
 
 // Friend routes
-router.post('/friends', authenticateToken, friendHandler.add);
-router.get('/friends', authenticateToken, friendHandler.getAll);
 
 module.exports = router; 
