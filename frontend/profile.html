@@ -288,6 +288,7 @@
             color: #666;
             border-radius: 4px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .tab-button:hover {
@@ -531,6 +532,23 @@
             color: #dc3545;
             padding: 2rem;
         }
+
+        /* Ajout du style pour la pastille de notification */
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -566,7 +584,10 @@
                 <div class="tabs">
                     <button class="tab-button active" data-tab="friends-list">Mes amis</button>
                     <button class="tab-button" data-tab="add-friends">Ajouter des amis</button>
-                    <button class="tab-button" data-tab="friend-requests">Demandes d'amis</button>
+                    <button class="tab-button" data-tab="friend-requests">
+                        Demandes d'amis
+                        <span class="notification-badge" style="display: none">0</span>
+                    </button>
                 </div>
 
                 <div class="tab-content active" id="friends-list">
@@ -793,6 +814,15 @@
                 const requests = await response.json();
                 const requestsList = document.querySelector('.requests-list');
                 requestsList.innerHTML = '';
+
+                // Mise à jour de la pastille de notification
+                const badge = document.querySelector('.notification-badge');
+                if (requests && requests.length > 0) {
+                    badge.style.display = 'flex';
+                    badge.textContent = requests.length;
+                } else {
+                    badge.style.display = 'none';
+                }
 
                 if (!requests || requests.length === 0) {
                     requestsList.innerHTML = `
