@@ -549,6 +549,21 @@
             font-size: 12px;
             font-weight: bold;
         }
+
+        .logout-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 1rem;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -568,6 +583,7 @@
                         <div class="stat-label">Amis</div>
                     </div>
                 </div>
+                <button class="logout-button" onclick="handleLogout()">Déconnexion</button>
             </div>
         </div>
 
@@ -782,6 +798,12 @@
         // Gestion des onglets
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
+
+        // Fonction de déconnexion
+        function handleLogout() {
+            sessionStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
 
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {

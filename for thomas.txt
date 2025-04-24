@@ -1,7 +1,7 @@
 Pk c'est ecolo
 
 - TinyPng reduit les images d'environ 33% 
-- Un suel fichier css pour tout le front, ca evite les redondances
+- Un seul fichier css pour tout le front, ca evite les redondances
 - L'architecture du serveur est plus écolo
 - Pas de framework, donc c'est bcp moins lourd. On fait du natif
 
@@ -15,4 +15,7 @@ Pages
 - addFriends
 - searchbar
 - passer tout le site en anglais
+- Afficher les commentaires de ses amis pour les films
+- Pouvoir choisir son logo
+- Ajouter le nom unique ainsi que l'adresse mail
 - Rendre plus joli (Si j'ai le temps)
